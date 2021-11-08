@@ -18,7 +18,6 @@ batch_converter = alphabet.get_batch_converter()
 aminoacidTp = ['A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V']
 aaProperties = ["hydrophobicity", "volume", "bulkiness", "polarity", "Isoelectric point", "coil freq", "bg freq"]
 
-
 def encodePeptides(peptides, scheme, bias=False):
     # loading matrices
     bl50 = pd.read_csv("../data/Matrices/BLOSUM50", sep="\s+", comment="#", index_col=0)
