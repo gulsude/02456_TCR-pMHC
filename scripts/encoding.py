@@ -6,7 +6,7 @@ import numpy as np
 import torch
 import esm
 
-def esm_1b(peptides, pooling=True, model="ESM"):
+def esm_1b(peptides, pooling=True, model="ESM"): #model = MSA is not working properly yet
     embeddings = list()
     # Load pre-trained ESM-1b model
     if model == "ESM":
@@ -22,9 +22,15 @@ def esm_1b(peptides, pooling=True, model="ESM"):
         data.append(("", peptide))
     batch_labels, batch_strs, batch_tokens = batch_converter(data)
 
-    with torch.no_grad():
-        results = model(batch_tokens, repr_layers=[33], return_contacts=True) #look for MSA version
-    token_representations = results["representations"][33] #look for MSA version
+    if model == "ESM":
+        with torch.no_grad():
+            results = model(batch_tokens, repr_layers=[33], return_contacts=True) #look for MSA version
+        token_representations = results["representations"][33] #look for MSA version
+    else:
+        with torch.no_grad():
+            results = model(batch_tokens, repr_layers=[12], return_contacts=True) #look for MSA version
+        token_representations = results["representations"][12] #look for MSA version
+
 
     sequence_representations = []
     for i, (_, seq) in enumerate(data):
