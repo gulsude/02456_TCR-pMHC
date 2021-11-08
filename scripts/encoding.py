@@ -6,17 +6,34 @@ import numpy as np
 import torch
 import esm
 
-def esm_1b(peptides):
+def esm_1b(peptides, pooling=True, model="ESM"):
     embeddings = list()
     # Load pre-trained ESM-1b model
-    model, alphabet = esm.pretrained.esm1b_t33_650M_UR50S()
-    batch_converter = alphabet.get_batch_converter()
+    if model == "ESM":
+        model, alphabet = esm.pretrained.esm1b_t33_650M_UR50S()
+        batch_converter = alphabet.get_batch_converter()
+    elif model == "MSA":
     # Load pre-trained ESM-MSA-1b model
-    modelMSA, alphabet2 = esm.pretrained.esm_msa1b_t12_100M_UR50S()
-    batch_converter = alphabet.get_batch_converter()
-    
-    return embeddings
-    
+        model, alphabet = esm.pretrained.esm_msa1b_t12_100M_UR50S()
+        batch_converter = alphabet.get_batch_converter()
+
+    data = []
+    for peptide in peptides:
+        data.append(("", peptide))
+    batch_labels, batch_strs, batch_tokens = batch_converter(data)
+
+    with torch.no_grad():
+        results = model(batch_tokens, repr_layers=[33], return_contacts=True) #look for MSA version
+    token_representations = results["representations"][33] #look for MSA version
+
+    sequence_representations = []
+    for i, (_, seq) in enumerate(data):
+        if pooling:
+            sequence_representations.append(token_representations[i, 1: len(seq) + 1].mean(0))
+        else:
+            sequence_representations.append(token_representations[i, 1: len(seq) + 1])
+
+    return sequence_representations
 
 # list of aa and list of properties in matrix aaIndex
 aminoacidTp = ['A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V']
