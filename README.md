@@ -4,7 +4,6 @@ This is a repo for the development of the project TCR-pMHC for 02456 Deep Learni
 
 Data directories will be ignored while using git, therefore please place the data in:
 
-└───data \
-│   │\
-│   └───train\
-│   └───validation
+data \
+└───train\
+└───validation
