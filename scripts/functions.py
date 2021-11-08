@@ -4,6 +4,30 @@ import numpy as np
 import torch
 import math
 
+
+def reverseOneHot(encoding):
+    """
+    Converts one-hot encoded array back to string sequence
+    """
+    mapping = dict(zip(range(20),"ACDEFGHIKLMNPQRSTVWY"))
+    seq=''
+    for i in range(len(encoding)):
+        if np.max(encoding[i])>0:
+            seq+=mapping[np.argmax(encoding[i])]
+    return seq
+
+def extract_sequences(dataset_X):
+    """
+    Return DataFrame with MHC, peptide and TCR a/b sequences from
+    one-hot encoded complex sequences in dataset X
+    """
+    mhc_sequences = [reverseOneHot(arr[0:179,0:20]) for arr in dataset_X]
+    pep_sequences = [reverseOneHot(arr[179:190,0:20]) for arr in dataset_X]
+    tcr_sequences = [reverseOneHot(arr[192:,0:20]) for arr in dataset_X]
+    df_sequences = pd.DataFrame({"MHC":mhc_sequences, "peptide":pep_sequences,
+                                 "tcr":tcr_sequences})
+    return df_sequences
+
 def load_peptide_target(filename):
     """
     Read amino acid sequence of peptides and
