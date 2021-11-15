@@ -3,9 +3,12 @@ target_list = []
 
 import encoding as enc
 
-peptides = ["AACG"]
-embedded = enc.esm_1b(peptides, model="MSA")
+peptides = ["AGAG"]
+#embedded = enc.esm_1b(peptides, model="MSA")
 
-print(embedded)
-print(embedded[0].shape)
-print(embedded)
+
+a = enc.esm_ASM(peptides, pooling=False)
+
+print(len(a))
+print(a)
+
