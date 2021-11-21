@@ -16,7 +16,7 @@ def reverseOneHot(encoding):
             seq+=mapping[np.argmax(encoding[i])]
     return seq
 
-def extract_sequences(dataset_X):
+def extract_sequences(dataset_X, merge=False, keep_energy=False):
     """
     Return DataFrame with MHC, peptide and TCR a/b sequences from
     one-hot encoded complex sequences in dataset X
@@ -24,8 +24,18 @@ def extract_sequences(dataset_X):
     mhc_sequences = [reverseOneHot(arr[0:179,0:20]) for arr in dataset_X]
     pep_sequences = [reverseOneHot(arr[179:190,0:20]) for arr in dataset_X]
     tcr_sequences = [reverseOneHot(arr[192:,0:20]) for arr in dataset_X]
-    df_sequences = pd.DataFrame({"MHC":mhc_sequences, "peptide":pep_sequences,
+    all_sequences = [reverseOneHot(arr[:,0:20]) for arr in dataset_X]
+    energy_complex = [arr[:1,27:] for arr in dataset_X]
+
+    if merge:
+        df_sequences = pd.DataFrame({"all": all_sequences})
+
+    else:
+        df_sequences = pd.DataFrame({"MHC":mhc_sequences,
+                                 "peptide":pep_sequences,
                                  "tcr":tcr_sequences})
+    if keep_energy:
+        pass #EDIT LATER TO ADD ENERGIES TO DATAFRAME
     return df_sequences
 
 def load_peptide_target(filename):
