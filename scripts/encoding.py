@@ -16,7 +16,6 @@ def esm_1b(peptides, pooling=True):
     data = []
     for peptide in peptides:
         data.append(("", peptide))
-    print("data: ", data)
     batch_labels, batch_strs, batch_tokens = batch_converter(data)
     with torch.no_grad():
         results = model(batch_tokens, repr_layers=[33], return_contacts=True)
@@ -31,7 +30,7 @@ def esm_1b(peptides, pooling=True):
     return sequence_representations
 
 def esm_ASM(peptides, pooling=True):
-    print("flag msa")
+
     # Load pre-trained ESM-MSA-1b model
     model, alphabet = esm.pretrained.esm_msa1b_t12_100M_UR50S()
     batch_converter = alphabet.get_batch_converter()
@@ -58,20 +57,21 @@ def esm_ASM(peptides, pooling=True):
 aminoacidTp = ['A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V']
 aaProperties = ["hydrophobicity", "volume", "bulkiness", "polarity", "Isoelectric point", "coil freq", "bg freq"]
 
-def encodePeptides(peptides, scheme, bias=False):
-    # loading matrices
-    bl50 = pd.read_csv("../data/Matrices/BLOSUM50", sep="\s+", comment="#", index_col=0)
-    bl50 = bl50.loc[aminoacidTp, aminoacidTp]
-    aaIndex = pd.read_csv("../data/Matrices/aaIndex.txt", sep=",", comment="#", index_col=0)
-    sp = pd.read_csv("../data/Matrices/sparse", sep=" ", comment="#", header=None)
-    sp.columns = aminoacidTp
-    sp2 = pd.read_csv("../data/Matrices/sparse2", sep=" ", comment="#", header=None).astype(float)
-    sp2.columns = aminoacidTp
-    sp3 = pd.read_csv("../data/Matrices/sparse3", sep=" ", comment="#", header=None).astype(float)
-    sp3.columns = aminoacidTp
-    vhse = pd.read_csv("../data/Matrices/VHSE", sep="\s+", comment="#")
-    pssm = pd.read_csv("../data/Matrices/pssm", sep="\t", comment="#")
+# loading matrices
+bl50 = pd.read_csv("../data/Matrices/BLOSUM50", sep="\s+", comment="#", index_col=0)
+bl50 = bl50.loc[aminoacidTp, aminoacidTp]
+aaIndex = pd.read_csv("../data/Matrices/aaIndex.txt", sep=",", comment="#", index_col=0)
+sp = pd.read_csv("../data/Matrices/sparse", sep=" ", comment="#", header=None)
+sp.columns = aminoacidTp
+sp2 = pd.read_csv("../data/Matrices/sparse2", sep=" ", comment="#", header=None).astype(float)
+sp2.columns = aminoacidTp
+sp3 = pd.read_csv("../data/Matrices/sparse3", sep=" ", comment="#", header=None).astype(float)
+sp3.columns = aminoacidTp
+vhse = pd.read_csv("../data/Matrices/VHSE", sep="\s+", comment="#")
+pssm = pd.read_csv("../data/Matrices/pssm", sep="\t", comment="#")
 
+
+def encodePeptides(peptides, scheme, bias=False):
     # output
     encoded_pep = []
 
