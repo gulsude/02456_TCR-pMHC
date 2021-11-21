@@ -5,7 +5,6 @@ import torch
 import math
 from sklearn.metrics import accuracy_score
 
-
 def reverseOneHot(encoding):
     """
     Converts one-hot encoded array back to string sequence
