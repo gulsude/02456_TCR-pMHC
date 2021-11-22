@@ -38,12 +38,16 @@ nsamples, nx, ny = X_val.shape
 print("Val set shape:", nsamples, nx, ny)
 
 
+
 embedding="esm-1b"
 data_list=[X_val]
 
+#doing testing in only 5 samples
+
 print("-----------")
 
-data_list_enc = []
+data_list_enc = []  #final output
+
 if embedding == "Baseline":
     data_list_enc = data_list
 
@@ -84,6 +88,4 @@ print(len(data_list_enc[0][0][0]))
 
 
 
-
-#energy = f.extract_energy_terms(X_val)
 
