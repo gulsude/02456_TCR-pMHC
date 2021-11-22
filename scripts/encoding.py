@@ -6,6 +6,7 @@ import numpy as np
 import torch
 import esm
 
+
 def esm_1b(peptides, pooling=True):
     embeddings = list()
     # Load pre-trained ESM-1b model
@@ -70,6 +71,15 @@ sp3.columns = aminoacidTp
 vhse = pd.read_csv("../data/Matrices/VHSE", sep="\s+", comment="#")
 pssm = pd.read_csv("../data/Matrices/pssm", sep="\t", comment="#")
 
+#standardizing blosum and aaIndex
+mean = np.mean(bl50)
+std = np.std(bl50)
+bl50 = (bl50 - mean)/std
+
+mean = np.mean(aaIndex, axis=1)
+std = np.std(aaIndex, axis=1)
+aaIndex = aaIndex.subtract(mean,axis='rows')
+aaIndex = aaIndex.divide(std,axis='rows')
 
 def encodePeptides(peptides, scheme, bias=False):
     # output
@@ -121,19 +131,6 @@ def encodePeptides(peptides, scheme, bias=False):
 
 # the difference is the output shape
 def encodePeptidesCNN(peptides, scheme):
-    # loading matrices
-    bl50 = pd.read_csv("../data/Matrices/BLOSUM50", sep="\s+", comment="#", index_col=0)
-    bl50 = bl50.loc[aminoacidTp, aminoacidTp]
-    aaIndex = pd.read_csv("../data/Matrices/aaIndex.txt", sep=",", comment="#", index_col=0)
-    sp = pd.read_csv("../data/Matrices/sparse", sep=" ", comment="#", header=None)
-    sp.columns = aminoacidTp
-    sp2 = pd.read_csv("../data/Matrices/sparse2", sep=" ", comment="#", header=None).astype(float)
-    sp2.columns = aminoacidTp
-    sp3 = pd.read_csv("../data/Matrices/sparse3", sep=" ", comment="#", header=None).astype(float)
-    sp3.columns = aminoacidTp
-    vhse = pd.read_csv("../data/Matrices/VHSE", sep="\s+", comment="#")
-    pssm = pd.read_csv("../data/Matrices/pssm", sep="\t", comment="#")
-
     # output
     encoded_pep = []
 
