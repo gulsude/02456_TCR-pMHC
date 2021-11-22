@@ -83,7 +83,7 @@ class Net_th(nn.Module):
         return x
 
 class Net_project(nn.Module):
-    def __init__(self,  num_classes, n_features, numHN, numFilter,dropOutRate):
+    def __init__(self,  num_classes, n_features, numHN, numFilter,  dropOutRate):
         super(Net_th, self).__init__()
         self.bn0 = nn.BatchNorm1d(n_features)
         self.conv1 = nn.Conv1d(in_channels=n_features, out_channels=numFilter, kernel_size=3, stride=2, padding=1)
