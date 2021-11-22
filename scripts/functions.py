@@ -6,7 +6,7 @@ import math
 from sklearn.metrics import accuracy_score, accuracy_score, roc_auc_score, roc_curve, auc
 
 def extract_energy_terms(dataset_X):
-    all_en = [arr[28:,20:] for arr in dataset_X]  # 178
+    all_en = [np.concatenate((arr[0:190,20:], arr[192:,20:]), axis=0) for arr in dataset_X]  # 178
     return all_en
 
 def reverseOneHot(encoding):
