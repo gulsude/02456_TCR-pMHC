@@ -15,7 +15,7 @@ torch.use_deterministic_algorithms(True)
 
 
 def extract_energy_terms(dataset_X):
-    all_en = [arr[28:,20:] for arr in dataset_X]  # 178
+    all_en = [np.concatenate((arr[0:190,20:], arr[192:,20:]), axis=0) for arr in dataset_X]  # 178
     return all_en
 
 def reverseOneHot(encoding):
