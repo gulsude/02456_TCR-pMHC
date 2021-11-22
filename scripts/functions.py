@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import torch
 import math
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, accuracy_score, roc_auc_score, roc_curve, auc
 
 def extract_energy_terms(dataset_X):
     all_en = [arr[28:,20:] for arr in dataset_X]  # 178
@@ -272,3 +272,106 @@ class EarlyStopping:
             print(f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...')
         torch.save(model.state_dict(), self.path)
         self.val_loss_min = val_loss
+                                                                                                                  
+def train_project(net, optimizer, train_ldr, val_ldr, test_ldr, X_valid, epochs, criterion):
+
+    num_epochs = epochs
+
+    train_acc = []
+    valid_acc = []
+    train_losses = []
+    valid_losses = []
+    train_auc = []
+    valid_auc = []
+
+    no_epoch_improve = 0
+    min_val_loss = np.Inf
+    
+    test_probs, test_preds, test_targs, test_peptides = [], [], [], []
+
+    for epoch in range(num_epochs):
+        cur_loss = 0
+        val_loss = 0
+        # Train
+        net.train()
+        train_preds, train_targs, train_probs = [], [], []
+        for batch_idx, (data, target) in enumerate(train_ldr):
+            X_batch =  data.float().detach().requires_grad_(True)
+            target_batch = torch.tensor(np.array(target), dtype = torch.float).unsqueeze(1)
+
+            optimizer.zero_grad()
+            output = net(X_batch)
+            batch_loss = criterion(output, target_batch)
+            batch_loss.backward()
+            optimizer.step()
+      
+            probs = torch.sigmoid(output.detach())
+            preds = np.round(probs.cpu())
+            train_probs += list(probs.data.cpu().numpy())
+            train_targs += list(np.array(target_batch.cpu()))
+            train_preds += list(preds.data.numpy())
+            cur_loss += batch_loss.detach()
+
+        train_losses.append(cur_loss / len(train_ldr.dataset))        
+
+        net.eval()
+        # Validation
+        val_preds, val_targs, val_probs = [], [], []
+        with torch.no_grad():
+            for batch_idx, (data, target) in enumerate(val_ldr):
+                x_batch_val = data.float().detach()
+                y_batch_val = target.float().detach().unsqueeze(1)
+
+                output = net(x_batch_val)
+                val_batch_loss = criterion(output, y_batch_val)
+
+                probs = torch.sigmoid(output.detach())
+                preds = np.round(probs.cpu())
+                val_probs += list(probs.data.cpu().numpy())
+                val_preds += list(preds.data.numpy()) 
+                val_targs += list(np.array(y_batch_val.cpu()))
+                val_loss += val_batch_loss.detach()
+
+            valid_losses.append(val_loss / len(val_ldr.dataset))
+            print("Epoch:", epoch+1)
+
+            train_acc_cur = accuracy_score(train_targs, train_preds)  
+            valid_acc_cur = accuracy_score(val_targs, val_preds) 
+            train_auc_cur = roc_auc_score(train_targs, train_probs)
+            valid_auc_cur = roc_auc_score(val_targs, val_probs)
+
+            train_acc.append(train_acc_cur)
+            valid_acc.append(valid_acc_cur)
+            train_auc.append(train_auc_cur)
+            valid_auc.append(valid_auc_cur)
+
+        # Early stopping
+        if (val_loss / len(X_valid)).item() < min_val_loss:
+            no_epoch_improve = 0
+            min_val_loss = (val_loss / len(X_valid))
+        else:
+            no_epoch_improve +=1
+        if no_epoch_improve == 5:
+            print("Early stopping\n")
+            break
+            
+    # Test
+    if test_ldr != []:
+        with torch.no_grad():
+            for batch_idx, (data, target, peptide) in enumerate(test_ldr):
+                x_batch_test = data.float().detach()
+                y_batch_test = target.float().detach().unsqueeze(1)
+                peptide_batch_test = peptide.int().detach()
+                
+                output = net(x_batch_test)
+
+                probs = torch.sigmoid(output.detach())
+                preds = np.round(probs.cpu())
+                test_probs += list(probs.data.cpu().numpy())
+                test_preds += list(preds.data.numpy())
+                test_targs += list(np.array(y_batch_test.cpu()))
+                test_peptides += list(np.array(peptide_batch_test.cpu()))
+
+    return train_acc, train_losses, train_auc, valid_acc, valid_losses, valid_auc, val_preds, val_targs
+        
+        
