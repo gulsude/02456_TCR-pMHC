@@ -5,6 +5,10 @@ import torch
 import math
 from sklearn.metrics import accuracy_score
 
+def extract_energy_terms(dataset_X):
+    all_en = [arr[28:,20:] for arr in dataset_X]  # 178
+    return all_en
+
 def reverseOneHot(encoding):
     """
     Converts one-hot encoded array back to string sequence
