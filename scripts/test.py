@@ -39,7 +39,7 @@ print("Val set shape:", nsamples, nx, ny)
 
 
 
-embedding="blosum"
+embedding="esm-1b"
 data_list=[X_val]
 
 #doing testing in only 5 samples
@@ -55,7 +55,7 @@ elif embedding == "esm-1b":
     for dataset in data_list:
         print(type(dataset))
         print(dataset.shape)
-        x_enc = np.array(func.extract_sequences(dataset, merge=True).values.tolist())
+        x_enc = np.array(func.extract_sequences(dataset, merge=True)) #.values.tolist())
         print("x_enc1")
         print(x_enc.shape)
         x_enc = np.array([enc.esm_1b(seq, pooling=False) for seq in x_enc])
