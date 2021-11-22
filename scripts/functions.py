@@ -46,7 +46,7 @@ def extract_sequences(dataset_X, merge=False):
         df_sequences = pd.DataFrame({"MHC":mhc_sequences,
                                  "peptide":pep_sequences,
                                  "tcr":tcr_sequences})
-
+    df_sequences = df_sequences.to_numpy().reshape(5)
     return df_sequences
 
 def load_peptide_target(filename):

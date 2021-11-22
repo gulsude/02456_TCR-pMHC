@@ -39,7 +39,7 @@ print("Val set shape:", nsamples, nx, ny)
 
 
 
-embedding="esm-1b"
+embedding="blosum"
 data_list=[X_val]
 
 #doing testing in only 5 samples
@@ -74,17 +74,12 @@ elif embedding == "esm_ASM":
 else:
     print("flag")
     for dataset in data_list:
-        x_enc = func.extract_sequences(dataset, merge=True).values.tolist()
-        #print(x_enc)
-        x_enc = [enc.encodePeptidesCNN(seq, scheme=embedding) for seq in x_enc]
-        print(x_enc)
+        x_enc = func.extract_sequences(dataset, merge=True)
+        x_enc = [enc.encodePeptides(seq, scheme=embedding) for seq in x_enc]
+        print(type(x_enc))
         data_list_enc.append(x_enc)
 
 
-print(len(data_list_enc))
-print(len(data_list_enc[0]))
-print(len(data_list_enc[0][0]))
-print(len(data_list_enc[0][0][0]))
 
 
 
