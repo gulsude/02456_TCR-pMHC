@@ -13,20 +13,26 @@ torch.manual_seed(seed_val)
 torch.cuda.manual_seed_all(seed_val)
 torch.use_deterministic_algorithms(True)
 
-
 def extract_energy_terms(dataset_X):
-    all_en = [np.concatenate((arr[0:190,20:], arr[192:,20:]), axis=0) for arr in dataset_X]  # 178
+    all_en = [np.concatenate((arr[0:190,20:], arr[192:,20:]), axis=0) for arr in dataset_X]
     return all_en
 
+def return_aa(one_hot):
+    mapping = dict(zip(range(20),"ACDEFGHIKLMNPQRSTVWY"))
+    try:
+        index = one_hot.index(1)
+        return mapping[index]     
+    except:
+        return 'X'
+    
 def reverseOneHot(encoding):
     """
     Converts one-hot encoded array back to string sequence
     """
-    mapping = dict(zip(range(20),"ACDEFGHIKLMNPQRSTVWY"))
     seq=''
     for i in range(len(encoding)):
-        if np.max(encoding[i])>0:
-            seq+=mapping[np.argmax(encoding[i])]
+            if return_aa(encoding[i].tolist()) != 'X':
+                seq+=return_aa(encoding[i].tolist())
     return seq
 
 def extract_sequences(dataset_X, merge=False):
@@ -35,7 +41,7 @@ def extract_sequences(dataset_X, merge=False):
     one-hot encoded complex sequences in dataset X
     """
     mhc_sequences = [reverseOneHot(arr[0:179,0:20]) for arr in dataset_X]
-    pep_sequences = [reverseOneHot(arr[179:190,0:20]) for arr in dataset_X]
+    pep_sequences = [reverseOneHot(arr[179:192,0:20]) for arr in dataset_X] ## 190 or 192 ????
     tcr_sequences = [reverseOneHot(arr[192:,0:20]) for arr in dataset_X]
     all_sequences = [reverseOneHot(arr[:,0:20]) for arr in dataset_X]
 
@@ -45,9 +51,22 @@ def extract_sequences(dataset_X, merge=False):
     else:
         df_sequences = pd.DataFrame({"MHC":mhc_sequences,
                                  "peptide":pep_sequences,
-                                 "tcr":tcr_sequences})
-    df_sequences = df_sequences.to_numpy().reshape(5)
+                                 "TCR":tcr_sequences})
+        
     return df_sequences
+    
+
+def extract_aa_and_energy_terms(dataset_X):
+    new_dataset_X = list()
+    for cmplx in range(len(dataset_X)):
+        df = pd.DataFrame(dataset_X[cmplx])
+        df['aa'] = 'A'
+        for i in range(len(df)):
+            df['aa'][i] = return_aa(list(df.iloc[i,0:20]))
+        df = df.iloc[:,20:]
+        new_dataset_X.append(np.array(df))
+    return np.array(new_dataset_X)
+
 
 def load_peptide_target(filename):
     """

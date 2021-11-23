@@ -13,21 +13,28 @@ def esm_1b(peptides, pooling=True):
 
     model, alphabet = esm.pretrained.esm1b_t33_650M_UR50S()
     batch_converter = alphabet.get_batch_converter()
-
+    print("\tesm:\n\tmodel and alphabet are ready")
     data = []
+    count = 0
     for peptide in peptides:
+        print(len(peptide))
         data.append(("", peptide))
+    print("\tdata is ready - model starts running")
     batch_labels, batch_strs, batch_tokens = batch_converter(data)
     with torch.no_grad():
         results = model(batch_tokens, repr_layers=[33], return_contacts=True)
     token_representations = results["representations"][33]
-
+    print("\tmodel is done")
     sequence_representations = []
     for i, (_, seq) in enumerate(data):
+        count += 1
+        if count % 2 == 0:
+            print("\t\tFlag", count)
         if pooling:
             sequence_representations.append(token_representations[i, 1: len(seq) + 1].mean(0))
         else:
             sequence_representations.append(token_representations[i, 1: len(seq) + 1])
+            print(len(token_representations[i, 1: len(seq) + 1]))
     return sequence_representations
 
 def esm_ASM(peptides, pooling=True):
