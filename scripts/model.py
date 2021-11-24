@@ -105,7 +105,7 @@ class Net_project(nn.Module):
         self.rnn = nn.LSTM(input_size=numFilter,hidden_size=numHN,num_layers=3, dropout=dropOutRate, batch_first=True, bidirectional = True)
         self.drop = nn.Dropout(p = dropOutRate)
 
-        self.fc1 = nn.Linear(26*2, num_classes)
+        self.fc1 = nn.Linear(numHN*2, num_classes)
         torch.nn.init.xavier_uniform_(self.fc1.weight)
 
         self.softmax = nn.Softmax(dim=1)
@@ -123,4 +123,5 @@ class Net_project(nn.Module):
         cat = torch.cat((h[-2, :, :], h[-1, :, :]), dim=1)
         cat = self.drop(cat)
         x = self.fc1(cat)
+        x = self.softmax(x)
         return x

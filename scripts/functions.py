@@ -41,12 +41,13 @@ def extract_sequences(dataset_X, merge=False):
 
     if merge:
         df_sequences = pd.DataFrame({"all": all_sequences})
+        df_sequences = df_sequences.to_numpy().reshape(len(all_sequences))
 
     else:
         df_sequences = pd.DataFrame({"MHC":mhc_sequences,
                                  "peptide":pep_sequences,
                                  "tcr":tcr_sequences})
-    df_sequences = df_sequences.to_numpy().reshape(5)
+
     return df_sequences
 
 def load_peptide_target(filename):
@@ -235,7 +236,7 @@ def plot_mcc(y_test,pred,mcc):
 #from pytorchTools
 class EarlyStopping:
     """Early stops the training if validation loss doesn't improve after a given patience."""
-    def __init__(self, patience=7, verbose=False, delta=0, path='checkpoint.pt'):
+    def __init__(self, patience=300, verbose=False, delta=0, path='checkpoint.pt'):
         """
         Args:
             patience (int): How long to wait after last time validation loss improved.
@@ -358,7 +359,7 @@ def train_project(net, optimizer, train_ldr, val_ldr, test_ldr, X_valid, epochs,
             min_val_loss = (val_loss / len(X_valid))
         else:
             no_epoch_improve +=1
-        if no_epoch_improve == 5:
+        if no_epoch_improve == 20:
             print("Early stopping\n")
             break
             

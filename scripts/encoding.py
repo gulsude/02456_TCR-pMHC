@@ -5,30 +5,43 @@ import pandas as pd
 import numpy as np
 import torch
 import esm
+import gc
 
 
-def esm_1b(peptides, pooling=True):
+def esm_1b_peptide(peptide, pooling=True):
+    peptides = [peptide]
     embeddings = list()
     # Load pre-trained ESM-1b model
 
     model, alphabet = esm.pretrained.esm1b_t33_650M_UR50S()
     batch_converter = alphabet.get_batch_converter()
-
     data = []
+    count = 0
     for peptide in peptides:
         data.append(("", peptide))
     batch_labels, batch_strs, batch_tokens = batch_converter(data)
     with torch.no_grad():
         results = model(batch_tokens, repr_layers=[33], return_contacts=True)
-    token_representations = results["representations"][33]
-
+    token_representations = results["representations"][33].numpy()[0]
     sequence_representations = []
+    del results, batch_labels, batch_strs, batch_tokens, model, alphabet, batch_converter
+    gc.collect()
     for i, (_, seq) in enumerate(data):
+        count += 1
+        if count % 100 == 0:
+            print("\t\tFlag", count)
+        pad = 420 - token_representations.shape[0]
+        print("....")
+        print(token_representations)
+        print(token_representations.shape)
+        token_representations = np.pad(token_representations, ((0, pad), (0, 0)), 'constant')
+        print(token_representations.shape)
         if pooling:
-            sequence_representations.append(token_representations[i, 1: len(seq) + 1].mean(0))
+            return token_representations[i, 1: len(seq) + 1].mean(0)
         else:
-            sequence_representations.append(token_representations[i, 1: len(seq) + 1])
-    return sequence_representations
+            return token_representations[i, 1: len(seq) + 1]
+
+
 
 def esm_ASM(peptides, pooling=True):
 
@@ -42,8 +55,8 @@ def esm_ASM(peptides, pooling=True):
     batch_labels, batch_strs, batch_tokens = batch_converter(data)
 
     with torch.no_grad():
-        results = model(batch_tokens, repr_layers=[12], return_contacts=True) #look for MSA version
-    token_representations = results["representations"][12] #look for MSA version
+        results = model(batch_tokens, repr_layers=[33], return_contacts=True) #look for MSA version
+    token_representations = results["representations"][33] #look for MSA version
 
     sequence_representations = []
     for i, (_, seq) in enumerate(data):
@@ -52,6 +65,11 @@ def esm_ASM(peptides, pooling=True):
         else:
             sequence_representations.append(token_representations[0, i, 1:])
 
+    print("--//--")
+    print(sequence_representations)
+    # padding to sequence:
+    pad = 420 - sequence_representations.shape[0]
+    sequence_representations = np.pad(sequence_representations, ((0, pad), (0, 0)), 'constant')
     return sequence_representations
 
 # list of aa and list of properties in matrix aaIndex
@@ -62,14 +80,7 @@ aaProperties = ["hydrophobicity", "volume", "bulkiness", "polarity", "Isoelectri
 bl50 = pd.read_csv("../data/Matrices/BLOSUM50", sep="\s+", comment="#", index_col=0)
 bl50 = bl50.loc[aminoacidTp, aminoacidTp]
 aaIndex = pd.read_csv("../data/Matrices/aaIndex.txt", sep=",", comment="#", index_col=0)
-sp = pd.read_csv("../data/Matrices/sparse", sep=" ", comment="#", header=None)
-sp.columns = aminoacidTp
-sp2 = pd.read_csv("../data/Matrices/sparse2", sep=" ", comment="#", header=None).astype(float)
-sp2.columns = aminoacidTp
-sp3 = pd.read_csv("../data/Matrices/sparse3", sep=" ", comment="#", header=None).astype(float)
-sp3.columns = aminoacidTp
 vhse = pd.read_csv("../data/Matrices/VHSE", sep="\s+", comment="#")
-pssm = pd.read_csv("../data/Matrices/pssm", sep="\t", comment="#")
 
 #standardizing blosum and aaIndex
 mean = np.mean(bl50)
@@ -82,57 +93,45 @@ aaIndex = aaIndex.subtract(mean,axis='rows')
 aaIndex = aaIndex.divide(std,axis='rows')
 
 def encodePeptides(peptides, scheme, bias=False):
-    # output
-    encoded_pep = []
-
     # converting scheme to list if needed
     if type(scheme) != list:
         scheme = [scheme]
+    if type(peptides) == str:
+        peptides = [peptides]
 
-    # encding by peptide/by aa/ by scheme
+    # encding by by aa/ by scheme
+
+    enc_peptides = list()
+
     for peptide in peptides:
-        pos = 0
-        seq = []
+        seq = list()
         for aa in peptide:
             for sc in scheme:
                 if sc == "blosum":
-                    seq += bl50.loc[[aa]].values.tolist()[0]
-
-                elif sc in aaProperties:
-                    seq.append(aaIndex[aa][sc])
-
-                elif sc == "sparse":
-                    seq += sp[aa].values.tolist()
-
-                elif sc == "sparse2":
-                    seq += sp2[aa].values.tolist()
-
-                elif sc == "sparse3":
-                    seq += sp3[aa].values.tolist()
-
+                    seq.append( bl50.loc[[aa]].values[0])
                 elif sc == "allProperties":
-                    seq += aaIndex[aa].values.tolist()
-
+                    seq.append(aaIndex[aa].values)
                 elif sc == "vhse":
-                    seq += vhse[aa].values.tolist()
-
-                elif sc == "pssm":
-                    seq.append(pssm[aa][pos])
-
+                    seq.append(vhse[aa].values)
                 else:
                     print("ERROR: No encoding matrix with the name {}".format(sc))
-
-            pos = pos + 1
         if bias:
             seq.append(1)
-        encoded_pep.append(seq)
-    return encoded_pep
+        seq = np.array(seq)
+        print(seq)
+
+        #padding to sequence:
+        pad = 420 - seq.shape[0]
+        seq = np.pad(seq, ((0,pad),(0,0)), 'constant')
+        enc_peptides.append(seq)
+
+    return enc_peptides
 
 
-# the difference is the output shape
+# the difference is the output shape - not used
 def encodePeptidesCNN(peptides, scheme):
     # output
-    encoded_pep = []
+    encoded_pep = np.empty()
 
     # converting scheme to list if needed
     if type(scheme) != list:
@@ -172,5 +171,5 @@ def encodePeptidesCNN(peptides, scheme):
                     print("ERROR: No encoding matrix with the name {}".format(sc))
 
             pos = pos + 1
-        encoded_pep.append(seq)
+
     return encoded_pep
