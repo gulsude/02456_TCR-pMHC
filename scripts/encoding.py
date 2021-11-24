@@ -31,11 +31,8 @@ def esm_1b_peptide(peptide, pooling=True):
         if count % 100 == 0:
             print("\t\tFlag", count)
         pad = 420 - token_representations.shape[0]
-        print("....")
-        print(token_representations)
-        print(token_representations.shape)
         token_representations = np.pad(token_representations, ((0, pad), (0, 0)), 'constant')
-        print(token_representations.shape)
+
         if pooling:
             return token_representations[i, 1: len(seq) + 1].mean(0)
         else:
@@ -43,8 +40,8 @@ def esm_1b_peptide(peptide, pooling=True):
 
 
 
-def esm_ASM(peptides, pooling=True):
-
+def esm_ASM(peptide, pooling=True):
+    peptides = [peptide]
     # Load pre-trained ESM-MSA-1b model
     model, alphabet = esm.pretrained.esm_msa1b_t12_100M_UR50S()
     batch_converter = alphabet.get_batch_converter()
@@ -55,21 +52,21 @@ def esm_ASM(peptides, pooling=True):
     batch_labels, batch_strs, batch_tokens = batch_converter(data)
 
     with torch.no_grad():
-        results = model(batch_tokens, repr_layers=[33], return_contacts=True) #look for MSA version
-    token_representations = results["representations"][33] #look for MSA version
+        results = model(batch_tokens, repr_layers=[12], return_contacts=True)
+    token_representations = results["representations"][12].numpy()[0][0]
 
+    del results, batch_labels, batch_strs, batch_tokens, model, alphabet, batch_converter
+    gc.collect()
     sequence_representations = []
-    for i, (_, seq) in enumerate(data):
-        if pooling:
-            sequence_representations.append(token_representations[0, i, 1:].mean(0))
-        else:
-            sequence_representations.append(token_representations[0, i, 1:])
 
-    print("--//--")
-    print(sequence_representations)
-    # padding to sequence:
-    pad = 420 - sequence_representations.shape[0]
-    sequence_representations = np.pad(sequence_representations, ((0, pad), (0, 0)), 'constant')
+    for i, (_, seq) in enumerate(data):
+        #add padding
+        pad = 420 - token_representations.shape[0]
+        token_representations = np.pad(token_representations, ((0, pad), (0, 0)), 'constant')
+        if pooling:
+            sequence_representations.append(token_representations[i, 1:].mean(0))
+        else:
+            sequence_representations.append(token_representations[i, 1:])
     return sequence_representations
 
 # list of aa and list of properties in matrix aaIndex
