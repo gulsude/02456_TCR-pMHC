@@ -299,7 +299,7 @@ class EarlyStopping:
         torch.save(model.state_dict(), self.path)
         self.val_loss_min = val_loss
                                                                                                                   
-def train_project(net, optimizer, train_ldr, val_ldr, test_ldr, X_valid, epochs, criterion):
+def train_project(net, optimizer, train_ldr, val_ldr, test_ldr, X_valid, epochs, criterion, early_stop):
 
     num_epochs = epochs
 
@@ -377,7 +377,7 @@ def train_project(net, optimizer, train_ldr, val_ldr, test_ldr, X_valid, epochs,
             min_val_loss = (val_loss / len(X_valid))
         else:
             no_epoch_improve +=1
-        if no_epoch_improve == 5:
+        if no_epoch_improve == early_stop:
             print("Early stopping\n")
             break
             
