@@ -383,21 +383,23 @@ def train_project(net, optimizer, train_ldr, val_ldr, test_ldr, X_valid, epochs,
             
     # Test
     if test_ldr != []:
+        
         with torch.no_grad():
-            for batch_idx, (data, target, peptide) in enumerate(test_ldr):
+            for batch_idx, (data, target) in enumerate(test_ldr):
                 x_batch_test = data.float().detach()
                 y_batch_test = target.float().detach().unsqueeze(1)
-                peptide_batch_test = peptide.int().detach()
-                
+
                 output = net(x_batch_test)
+                test_batch_loss = criterion(output, y_batch_test)
 
                 probs = torch.sigmoid(output.detach())
                 preds = np.round(probs.cpu())
                 test_probs += list(probs.data.cpu().numpy())
-                test_preds += list(preds.data.numpy())
+                test_preds = list(preds.data.numpy()) 
                 test_targs += list(np.array(y_batch_test.cpu()))
-                test_peptides += list(np.array(peptide_batch_test.cpu()))
+                test_loss += test_batch_loss.detach()
 
-    return train_acc, train_losses, train_auc, valid_acc, valid_losses, valid_auc, val_preds, val_targs
+    return train_acc, train_losses, train_auc, valid_acc, valid_losses, valid_auc, val_preds, val_targs, test_preds, list(test_targs)
+
         
         

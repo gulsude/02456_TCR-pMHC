@@ -197,3 +197,4 @@ class Net_project_transformer_CNN_RNN(nn.Module):
         cat = self.drop(cat)
         x = self.fc1(cat)
         return x
+    
