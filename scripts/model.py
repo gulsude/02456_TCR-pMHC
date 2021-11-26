@@ -53,9 +53,9 @@ class Net(nn.Module):
         return x
 
 
-class Net_th(nn.Module):
+class Net_thesis(nn.Module):
     def __init__(self,  num_classes):
-        super(Net_th, self).__init__()
+        super(Net_thesis, self).__init__()
         self.bn0 = nn.BatchNorm1d(n_features)
         self.conv1 = nn.Conv1d(in_channels=n_features, out_channels=100, kernel_size=3, stride=2, padding=1)
         torch.nn.init.kaiming_uniform_(self.conv1.weight)
@@ -91,7 +91,7 @@ class Net_th(nn.Module):
 
 class Net_project(nn.Module):
     def __init__(self,  num_classes, n_features, numHN, numFilter, dropOutRate):
-        super(Net_th, self).__init__()
+        super(Net_project, self).__init__()
         self.bn0 = nn.BatchNorm1d(n_features)
         self.conv1 = nn.Conv1d(in_channels=n_features, out_channels=numFilter, kernel_size=3, stride=2, padding=1)
         torch.nn.init.kaiming_uniform_(self.conv1.weight)
@@ -105,7 +105,7 @@ class Net_project(nn.Module):
         self.rnn = nn.LSTM(input_size=numFilter,hidden_size=numHN,num_layers=3, dropout=dropOutRate, batch_first=True, bidirectional = True)
         self.drop = nn.Dropout(p = dropOutRate)
 
-        self.fc1 = nn.Linear(26*2, num_classes)
+        self.fc1 = nn.Linear(numHN*2, num_classes)
         torch.nn.init.xavier_uniform_(self.fc1.weight)
 
         self.softmax = nn.Softmax(dim=1)
@@ -123,4 +123,5 @@ class Net_project(nn.Module):
         cat = torch.cat((h[-2, :, :], h[-1, :, :]), dim=1)
         cat = self.drop(cat)
         x = self.fc1(cat)
+        x = self.softmax(x)
         return x

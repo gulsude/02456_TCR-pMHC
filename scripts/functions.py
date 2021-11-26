@@ -29,7 +29,7 @@ def reverseOneHot(encoding):
             seq+=mapping[np.argmax(encoding[i])]
     return seq
 
-def extract_sequences(dataset_X, merge=False, keep_energy=False):
+def extract_sequences(dataset_X, merge=False):
     """
     Return DataFrame with MHC, peptide and TCR a/b sequences from
     one-hot encoded complex sequences in dataset X
@@ -38,17 +38,16 @@ def extract_sequences(dataset_X, merge=False, keep_energy=False):
     pep_sequences = [reverseOneHot(arr[179:190,0:20]) for arr in dataset_X]
     tcr_sequences = [reverseOneHot(arr[192:,0:20]) for arr in dataset_X]
     all_sequences = [reverseOneHot(arr[:,0:20]) for arr in dataset_X]
-    energy_complex = [arr[:1,27:] for arr in dataset_X]
 
     if merge:
         df_sequences = pd.DataFrame({"all": all_sequences})
+        df_sequences = df_sequences.to_numpy().reshape(len(all_sequences))
 
     else:
         df_sequences = pd.DataFrame({"MHC":mhc_sequences,
                                  "peptide":pep_sequences,
                                  "tcr":tcr_sequences})
-    if keep_energy:
-        pass #EDIT LATER TO ADD ENERGIES TO DATAFRAME
+
     return df_sequences
 
 def load_peptide_target(filename):
@@ -237,7 +236,7 @@ def plot_mcc(y_test,pred,mcc):
 #from pytorchTools
 class EarlyStopping:
     """Early stops the training if validation loss doesn't improve after a given patience."""
-    def __init__(self, patience=7, verbose=False, delta=0, path='checkpoint.pt'):
+    def __init__(self, patience=300, verbose=False, delta=0, path='checkpoint.pt'):
         """
         Args:
             patience (int): How long to wait after last time validation loss improved.
@@ -360,7 +359,7 @@ def train_project(net, optimizer, train_ldr, val_ldr, test_ldr, X_valid, epochs,
             min_val_loss = (val_loss / len(X_valid))
         else:
             no_epoch_improve +=1
-        if no_epoch_improve == 5:
+        if no_epoch_improve == 20:
             print("Early stopping\n")
             break
             
