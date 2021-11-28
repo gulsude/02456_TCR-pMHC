@@ -305,10 +305,16 @@ def train_project(net, optimizer, train_ldr, val_ldr, test_ldr, X_valid, epochs,
 
     train_acc = []
     valid_acc = []
+    test_acc = []
+    
     train_losses = []
     valid_losses = []
+    test_loss = []
+    
     train_auc = []
     valid_auc = []
+    test_auc = []
+    
 
     no_epoch_improve = 0
     min_val_loss = np.Inf
@@ -339,7 +345,7 @@ def train_project(net, optimizer, train_ldr, val_ldr, test_ldr, X_valid, epochs,
             cur_loss += batch_loss.detach()
 
         train_losses.append(cur_loss / len(train_ldr.dataset))        
-
+        
         net.eval()
         # Validation
         val_preds, val_targs, val_probs = [], [], []
@@ -359,7 +365,6 @@ def train_project(net, optimizer, train_ldr, val_ldr, test_ldr, X_valid, epochs,
                 val_loss += val_batch_loss.detach()
 
             valid_losses.append(val_loss / len(val_ldr.dataset))
-            print("Epoch:", epoch+1)
 
             train_acc_cur = accuracy_score(train_targs, train_preds)  
             valid_acc_cur = accuracy_score(val_targs, val_preds) 
@@ -370,7 +375,7 @@ def train_project(net, optimizer, train_ldr, val_ldr, test_ldr, X_valid, epochs,
             valid_acc.append(valid_acc_cur)
             train_auc.append(train_auc_cur)
             valid_auc.append(valid_auc_cur)
-
+        
         # Early stopping
         if (val_loss / len(X_valid)).item() < min_val_loss:
             no_epoch_improve = 0
@@ -381,12 +386,16 @@ def train_project(net, optimizer, train_ldr, val_ldr, test_ldr, X_valid, epochs,
             print("Early stopping\n")
             break
             
+        if epoch % 10 == 0:
+            print("Epoch {}".format(epoch), 
+                  " \t Train loss: {:.5f} \t Validation loss: {:.5f}".format(train_losses[-1], valid_losses[-1]))
+            
     # Test
     if test_ldr != []:
         
         with torch.no_grad():
-            test_loss = []
             for batch_idx, (data, target) in enumerate(test_ldr):
+                print(batch_idx)
                 x_batch_test = data.float().detach()
                 y_batch_test = target.float().detach().unsqueeze(1)
 
@@ -399,8 +408,12 @@ def train_project(net, optimizer, train_ldr, val_ldr, test_ldr, X_valid, epochs,
                 test_preds = list(preds.data.numpy()) 
                 test_targs = list(np.array(y_batch_test.cpu()))
                 test_loss = test_batch_loss.detach()
-
-    return train_acc, train_losses, train_auc, valid_acc, valid_losses, valid_auc, val_preds, val_targs, test_preds, list(test_targs), test_loss
+                test_auc_cur = roc_auc_score(test_targs, test_preds)
+                test_acc_cur = accuracy_score(test_targs, test_preds) 
+                test_acc.append(test_acc_cur)
+                test_auc.append(test_auc_cur)
+                
+    return train_acc, train_losses, train_auc, valid_acc, valid_losses, valid_auc, val_preds, val_targs, test_preds, list(test_targs), test_loss, test_acc, test_auc
 
         
         
