@@ -54,7 +54,7 @@ class Net(nn.Module):
 
 
 class Net_thesis(nn.Module):
-    def __init__(self,  num_classes):
+    def __init__(self,  num_classes, n_features):
         super(Net_thesis, self).__init__()
         self.bn0 = nn.BatchNorm1d(n_features)
         self.conv1 = nn.Conv1d(in_channels=n_features, out_channels=100, kernel_size=3, stride=2, padding=1)
@@ -72,7 +72,7 @@ class Net_thesis(nn.Module):
         self.fc1 = nn.Linear(26*2, num_classes)
         torch.nn.init.xavier_uniform_(self.fc1.weight)
 
-        self.softmax = nn.Softmax(dim=1)
+        #self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
         x = self.bn0(x)
@@ -87,7 +87,7 @@ class Net_thesis(nn.Module):
         cat = torch.cat((h[-2, :, :], h[-1, :, :]), dim=1)
         cat = self.drop(cat)
         x = self.fc1(cat)
-        x = self.softmax(x)
+        #x = self.softmax(x)
         return x
 
 class Net_project(nn.Module):
@@ -127,22 +127,23 @@ class Net_project(nn.Module):
         return x
     
 class Net_project_simple_CNN_RNN(nn.Module):
-    def __init__(self,  num_classes, n_features, numHN, numFilter,  dropOutRate):
+    def __init__(self,  num_classes, n_features, numHN_lstm, numFilter,  dropOutRate):
         super(Net_project_simple_CNN_RNN, self).__init__()
         self.bn0 = nn.BatchNorm1d(n_features)
         self.conv1 = nn.Conv1d(in_channels=n_features, out_channels=numFilter, kernel_size=3, stride=2, padding=1)
         torch.nn.init.kaiming_uniform_(self.conv1.weight)
         self.pool = nn.MaxPool1d(kernel_size=2, stride=2)
-        self.conv1_bn = nn.BatchNorm1d(100)
+        self.conv1_bn = nn.BatchNorm1d(numFilter)
 
         self.conv2 = nn.Conv1d(in_channels=numFilter, out_channels=numFilter, kernel_size=3, stride=2, padding=1)
         torch.nn.init.kaiming_uniform_(self.conv2.weight)
-        self.conv2_bn = nn.BatchNorm1d(100)
+        self.conv2_bn = nn.BatchNorm1d(numFilter)
 
-        self.rnn = nn.LSTM(input_size=numFilter,hidden_size=numHN,num_layers=3, dropout=dropOutRate, batch_first=True, bidirectional = True)
+        self.rnn = nn.LSTM(input_size=numFilter, hidden_size=numHN_lstm, num_layers=3, dropout=dropOutRate, batch_first=True, bidirectional = True)
+        
         self.drop = nn.Dropout(p = dropOutRate)
 
-        self.fc1 = nn.Linear(numHN*2, num_classes)
+        self.fc1 = nn.Linear(numHN_lstm*2, num_classes)
         torch.nn.init.xavier_uniform_(self.fc1.weight)
 
         self.softmax = nn.Softmax(dim=1)

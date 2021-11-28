@@ -395,7 +395,6 @@ def train_project(net, optimizer, train_ldr, val_ldr, test_ldr, X_valid, epochs,
         
         with torch.no_grad():
             for batch_idx, (data, target) in enumerate(test_ldr):
-                print(batch_idx)
                 x_batch_test = data.float().detach()
                 y_batch_test = target.float().detach().unsqueeze(1)
 
@@ -414,6 +413,4 @@ def train_project(net, optimizer, train_ldr, val_ldr, test_ldr, X_valid, epochs,
                 test_auc.append(test_auc_cur)
                 
     return train_acc, train_losses, train_auc, valid_acc, valid_losses, valid_auc, val_preds, val_targs, test_preds, list(test_targs), test_loss, test_acc, test_auc
-
-        
-        
+   
