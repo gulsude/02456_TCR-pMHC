@@ -78,6 +78,12 @@ for fp in glob.glob("../data/train/*input.npz"):
     data_list.append(data)
     target_list.append(targets)
 
+for fp in glob.glob("../data/validation/*input.npz"):
+    data = np.load(fp)["arr_0"]
+    targets = np.load(fp.replace("input", "labels"))["arr_0"]
+    data_list.append(data)
+    target_list.append(targets)
+
 print(len(data_list))
 print(len(target_list))
 
@@ -104,39 +110,38 @@ except:
 
 # try to fecth if already exist
 try:
-    infile = open(embedding_dir + 'dataset-{}'.format(embedding), 'rb')
-    data_list_enc = pickle.load(infile)
-    infile.close()
-    if len(data_list_enc) != len(data_list):
-        raise Exception("encoding needed")
+    raise Exception("encoding needed")
 
-# if no prior file, then embbed:
 except:
     data_list_enc = []
     if embedding == "Baseline":
         data_list_enc = data_list
 
     elif embedding == "esm-1b":
-        for dataset in data_list:
+        for i, dataset in enumerate(data_list):
             x_enc = np.array(func.extract_sequences(dataset, merge=True))
             x_enc = [enc.esm_1b_peptide(seq, pooling=False) for seq in x_enc]
             data_list_enc.append(x_enc)
+            print(len(data_list_enc))
+            print(len(data_list_enc[0]))
+            print(len(data_list_enc[0][0]))
+            print(len(data_list_enc[0][0][0]))
 
-        # save
-        outfile = open(embedding_dir + 'dataset-{}'.format(embedding), 'wb')
-        pickle.dump(data_list_enc, outfile)
-        outfile.close()
+            # save
+            outfile = open(embedding_dir + 'dataset-{}_{}'.format(embedding, i), 'wb')
+            pickle.dump(data_list_enc, outfile)
+            outfile.close()
 
     elif embedding == "esm_ASM":
-        for dataset in data_list:
+        for i, dataset in enumerate(data_list):
             x_enc = np.array(func.extract_sequences(dataset, merge=True))  # .values.tolist()
             x_enc = [enc.esm_ASM(seq, pooling=False) for seq in x_enc]
             data_list_enc.append(x_enc)
 
-        # save
-        outfile = open(embedding_dir + 'dataset-{}'.format(embedding), 'wb')
-        pickle.dump(data_list_enc, outfile)
-        outfile.close()
+            # save
+            outfile = open(embedding_dir + 'dataset-{}_{}'.format(embedding, i), 'wb')
+            pickle.dump(data_list_enc, outfile)
+            outfile.close()
 
     else:
         for dataset in data_list:

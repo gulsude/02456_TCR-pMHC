@@ -112,7 +112,7 @@ def esm_ASM(peptide, pooling=False):
             #add padding
             pad = 420 - sequence_representations.shape[0]
             sequence_representations = np.pad(sequence_representations, ((0, pad), (0, 0)), 'constant')
-    print("internal:", sequence_representations.shape)
+
     return sequence_representations
 
 # list of aa and list of properties in matrix aaIndex

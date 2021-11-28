@@ -123,5 +123,4 @@ class Net_project(nn.Module):
         cat = torch.cat((h[-2, :, :], h[-1, :, :]), dim=1)
         cat = self.drop(cat)
         x = self.fc1(cat)
-        x = self.softmax(x)
         return x
