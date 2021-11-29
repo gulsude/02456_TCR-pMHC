@@ -6,6 +6,8 @@ import numpy as np
 import torch, sys
 import esm
 import gc
+import DGraphDTAscripts as sp
+import DGraphDTAdata_process as dp
 
 
 def GNN_enc(peptide, pooling=False):
