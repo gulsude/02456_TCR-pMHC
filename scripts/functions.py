@@ -13,6 +13,13 @@ torch.manual_seed(seed_val)
 torch.cuda.manual_seed_all(seed_val)
 torch.use_deterministic_algorithms(True)
 
+def return_aa(one_hot):
+    mapping = dict(zip(range(20),"ACDEFGHIKLMNPQRSTVWY"))
+    try:
+        index = one_hot.index(1)
+        return mapping[index]     
+    except:
+        return 'X'  
 
 def extract_energy_terms(dataset_X):
     all_en = [np.concatenate((arr[0:190,20:], arr[192:,20:]), axis=0) for arr in dataset_X]  # 178
