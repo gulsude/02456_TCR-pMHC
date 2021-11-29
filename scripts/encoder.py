@@ -143,6 +143,10 @@ except:
             pickle.dump(data_list_enc, outfile)
             outfile.close()
 
+    else: embedding == "Graph": 
+            x_enc = np.array(func.extract_sequences(dataset, merge=True))
+            x_enc = [enc.GNN_enc(seq, pooling=False) for seq in x_enc]
+            data_list_enc.append(x_enc)
     else:
         for dataset in data_list:
             x_enc = func.extract_sequences(dataset, merge=True)
