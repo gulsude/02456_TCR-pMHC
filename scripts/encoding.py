@@ -8,6 +8,10 @@ import esm
 import gc
 
 
+def GNN_enc(peptide, pooling=False):
+    
+
+
 def esm_1b_peptide(peptide, pooling=False):
     #this only for one sentence
     peptides = [peptide]
