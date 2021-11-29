@@ -367,7 +367,7 @@ def train_project(net, optimizer, train_ldr, val_ldr, test_ldr, X_valid, epochs,
             print("Early stopping\n")
             break
 
-        if epoch % 10 == 0:
+        if epoch % 5 == 0:
             print("Epoch {}".format(epoch),
                   " \t Train loss: {:.5f} \t Validation loss: {:.5f}".format(train_losses[-1], valid_losses[-1]))
 
