@@ -4,6 +4,7 @@ import numpy as np
 import torch
 import math
 from sklearn.metrics import accuracy_score, accuracy_score, roc_auc_score, roc_curve, auc
+from sklearn.decomposition import PCA
 import random
 
 seed_val = 42
@@ -49,6 +50,36 @@ def extract_sequences(dataset_X, merge=False):
                                  "tcr":tcr_sequences})
 
     return df_sequences
+
+def prepare_data_pca(embedded_list):
+    """
+    Get result from embedded to have the proper size in 2D 
+    ready to run the PCA analysis afterwards.
+    """
+    print(len(embedded_list[0]))
+    n_observations = len(embedded_list)
+    print(n_observations)
+    n_residues = len(embedded_list[0])
+    embedded_att = len(embedded_list[0][0])
+    embedded_matrix = torch.tensor(embedded_list).reshape(n_observations * n_residues, embedded_att).numpy()
+
+    return embedded_matrix
+
+def run_PCA(data, variance_required = 0.9, max_components = 150):
+    """
+    Run PCA and get the minimum number of components required to reach 
+    the minimum variance required.
+    """
+    first_model = PCA(n_components = max_components)
+    first_model.fit_transform(data)
+
+    variances = first_model.explained_variance_ratio_.cumsum()
+    optimal_components = np.argmax(variances > variance_required)
+
+    reduced_model = PCA(n_components = optimal_components)
+    reduced_model.fit_transform(data)
+
+    return reduced_model
 
 def load_peptide_target(filename):
     """
