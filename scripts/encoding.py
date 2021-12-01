@@ -47,7 +47,8 @@ def esm_1b_peptide(peptide, pooling=False):
 
     return trp
 
-"""
+
+'''
 def esm_1b_peptide(peptide, pooling=True):
     peptides = [peptide]
     embeddings = list()
@@ -77,7 +78,8 @@ def esm_1b_peptide(peptide, pooling=True):
             return token_representations[i, 1: len(seq) + 1].mean(0)
         else:
             return token_representations[i, 1: len(seq) + 1]
-"""
+'''
+
 
 def esm_ASM(peptide, pooling=False):
 
@@ -99,7 +101,7 @@ def esm_ASM(peptide, pooling=False):
 
     del results, batch_labels, batch_strs, batch_tokens, model, alphabet, batch_converter
     gc.collect()
-    sequence_representations = []
+   
 
     for i, (_, seq) in enumerate(data):
 
@@ -114,6 +116,53 @@ def esm_ASM(peptide, pooling=False):
             sequence_representations = np.pad(sequence_representations, ((0, pad), (0, 0)), 'constant')
 
     return sequence_representations
+
+
+'''
+# Inhetired from the one above - without padding
+def esm_MSA(peptide, pooling=False, add_padding=True):
+    
+    peptides = [peptide]
+    
+    embeddings = list()
+    # Load pre-trained ESM-1b model
+
+    # Load pre-trained ESM-MSA-1b model
+    model, alphabet = esm.pretrained.esm_msa1b_t12_100M_UR50S()
+    batch_converter = alphabet.get_batch_converter()
+    
+    data = []
+    
+    for peptide in peptides:
+        data.append(("", peptide))
+    batch_labels, batch_strs, batch_tokens = batch_converter(data)
+    
+    with torch.no_grad():
+        results = model(batch_tokens, repr_layers=[12], return_contacts=True)
+    token_representations = results["representations"][12].numpy()[0][0]
+        
+    del results, batch_labels, batch_strs, batch_tokens, model, alphabet, batch_converter
+    gc.collect()
+    
+    sequence_representations = []
+    
+    for i, (_, seq) in enumerate(data):
+
+        if pooling:
+            sequence_representations = token_representations[1:, ].mean(0)
+
+        else:
+            sequence_representations = token_representations[1:, ]
+            if add_padding:
+                pad = 420 - sequence_representations.shape[0]
+                sequence_representations = np.pad(sequence_representations, ((0, pad), (0, 0)), 'constant')
+        
+    del token_representations
+    gc.collect()
+    
+    return sequence_representations
+'''
+
 
 # list of aa and list of properties in matrix aaIndex
 aminoacidTp = ['A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V']

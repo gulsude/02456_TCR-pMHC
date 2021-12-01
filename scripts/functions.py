@@ -14,6 +14,27 @@ torch.cuda.manual_seed_all(seed_val)
 torch.use_deterministic_algorithms(True)
 
 
+def return_aa(one_hot):
+    mapping = dict(zip(range(20),"ACDEFGHIKLMNPQRSTVWY"))
+    try:
+        index = one_hot.index(1)
+        return mapping[index]     
+    except:
+        return 'X'
+    
+    
+def extract_aa_and_energy_terms(dataset_X):
+    new_dataset_X = list()
+    for cmplx in range(len(dataset_X)):
+        df = pd.DataFrame(dataset_X[cmplx])
+        df['aa'] = 'A'
+        for i in range(len(df)):
+            df['aa'][i] = return_aa(list(df.iloc[i,0:20]))
+        df = df.iloc[:,20:]
+        new_dataset_X.append(np.array(df))
+    return np.array(new_dataset_X)
+
+
 def extract_energy_terms(dataset_X):
     all_en = [np.concatenate((arr[0:190,20:], arr[192:,20:]), axis=0) for arr in dataset_X]  # 178
     return all_en
