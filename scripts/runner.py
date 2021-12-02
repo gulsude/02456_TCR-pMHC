@@ -14,13 +14,15 @@ except:
     print(NBDIR + 'directory already exists')
 
 #hyperparameters
-numHN = [26, 32, 64] #
-numFilter = [50, 100, 200]
-embedding = [ 'esm-1b',"esm_ASM"]
+embedding = [ 'esm-1b',"esm_ASM" ]
 keep_energy=True
-learning_rate=[0.001, 0.0005]
+numHN = [26, 64]
+numFilter = [100, 200]
+learning_rate=[0.001]
 weight_decay = [0.0001, 0.0005]
-dropOutRate = [0.1, 0.2]
+dropOutRate = [0.1, 0.3]
+
+
 #for ML- flow
 name_experiment = "hyperparameter grid"
 
