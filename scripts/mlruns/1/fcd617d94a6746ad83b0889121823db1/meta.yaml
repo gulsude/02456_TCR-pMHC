@@ -1,0 +1,15 @@
+artifact_uri: file:///home/shannara/DL_02456/dayana_run/scripts/mlruns/1/fcd617d94a6746ad83b0889121823db1/artifacts
+end_time: 1638449225108
+entry_point_name: ''
+experiment_id: '1'
+lifecycle_stage: active
+name: ''
+run_id: fcd617d94a6746ad83b0889121823db1
+run_uuid: fcd617d94a6746ad83b0889121823db1
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1638449225086
+status: 3
+tags: []
+user_id: shannara
