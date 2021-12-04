@@ -1,0 +1,4 @@
+artifact_location: file:///home/shannara/DL_02456/workstation/mlruns/1
+experiment_id: '1'
+lifecycle_stage: active
+name: hyperparameter grid

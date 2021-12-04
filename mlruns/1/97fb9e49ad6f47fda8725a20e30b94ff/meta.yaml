@@ -1,0 +1,15 @@
+artifact_uri: file:///home/shannara/DL_02456/workstation/mlruns/1/97fb9e49ad6f47fda8725a20e30b94ff/artifacts
+end_time: 1638547112142
+entry_point_name: ''
+experiment_id: '1'
+lifecycle_stage: active
+name: ''
+run_id: 97fb9e49ad6f47fda8725a20e30b94ff
+run_uuid: 97fb9e49ad6f47fda8725a20e30b94ff
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1638547112120
+status: 3
+tags: []
+user_id: shannara
