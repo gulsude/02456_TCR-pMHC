@@ -96,11 +96,11 @@ class Net_project(nn.Module):
         self.conv1 = nn.Conv1d(in_channels=n_features, out_channels=numFilter, kernel_size=3, stride=2, padding=1)
         torch.nn.init.kaiming_uniform_(self.conv1.weight)
         self.pool = nn.MaxPool1d(kernel_size=2, stride=2)
-        self.conv1_bn = nn.BatchNorm1d(100)
+        self.conv1_bn = nn.BatchNorm1d(numFilter)
 
         self.conv2 = nn.Conv1d(in_channels=numFilter, out_channels=numFilter, kernel_size=3, stride=2, padding=1)
         torch.nn.init.kaiming_uniform_(self.conv2.weight)
-        self.conv2_bn = nn.BatchNorm1d(100)
+        self.conv2_bn = nn.BatchNorm1d(numFilter)
 
         self.rnn = nn.LSTM(input_size=numFilter,hidden_size=numHN,num_layers=3, dropout=dropOutRate, batch_first=True, bidirectional = True)
         self.drop = nn.Dropout(p = dropOutRate)
@@ -123,5 +123,4 @@ class Net_project(nn.Module):
         cat = torch.cat((h[-2, :, :], h[-1, :, :]), dim=1)
         cat = self.drop(cat)
         x = self.fc1(cat)
-        x = self.softmax(x)
         return x

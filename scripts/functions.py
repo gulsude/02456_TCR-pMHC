@@ -14,6 +14,27 @@ torch.cuda.manual_seed_all(seed_val)
 torch.use_deterministic_algorithms(True)
 
 
+def return_aa(one_hot):
+    mapping = dict(zip(range(20),"ACDEFGHIKLMNPQRSTVWY"))
+    try:
+        index = one_hot.index(1)
+        return mapping[index]     
+    except:
+        return 'X'
+    
+    
+def extract_aa_and_energy_terms(dataset_X):
+    new_dataset_X = list()
+    for cmplx in range(len(dataset_X)):
+        df = pd.DataFrame(dataset_X[cmplx])
+        df['aa'] = 'A'
+        for i in range(len(df)):
+            df['aa'][i] = return_aa(list(df.iloc[i,0:20]))
+        df = df.iloc[:,20:]
+        new_dataset_X.append(np.array(df))
+    return np.array(new_dataset_X)
+
+
 def extract_energy_terms(dataset_X):
     all_en = [np.concatenate((arr[0:190,20:], arr[192:,20:]), axis=0) for arr in dataset_X]  # 178
     return all_en
@@ -280,21 +301,26 @@ class EarlyStopping:
             print(f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...')
         torch.save(model.state_dict(), self.path)
         self.val_loss_min = val_loss
-                                                                                                                  
-def train_project(net, optimizer, train_ldr, val_ldr, test_ldr, X_valid, epochs, criterion):
 
+
+def train_project(net, optimizer, train_ldr, val_ldr, test_ldr, X_valid, epochs, criterion, early_stop):
     num_epochs = epochs
 
     train_acc = []
     valid_acc = []
+    test_acc = []
+
     train_losses = []
     valid_losses = []
+    test_loss = []
+
     train_auc = []
     valid_auc = []
+    test_auc = []
 
     no_epoch_improve = 0
     min_val_loss = np.Inf
-    
+
     test_probs, test_preds, test_targs, test_peptides = [], [], [], []
 
     for epoch in range(num_epochs):
@@ -304,15 +330,15 @@ def train_project(net, optimizer, train_ldr, val_ldr, test_ldr, X_valid, epochs,
         net.train()
         train_preds, train_targs, train_probs = [], [], []
         for batch_idx, (data, target) in enumerate(train_ldr):
-            X_batch =  data.float().detach().requires_grad_(True)
-            target_batch = torch.tensor(np.array(target), dtype = torch.float).unsqueeze(1)
+            X_batch = data.float().detach().requires_grad_(True)
+            target_batch = torch.tensor(np.array(target), dtype=torch.float).unsqueeze(1)
 
             optimizer.zero_grad()
             output = net(X_batch)
             batch_loss = criterion(output, target_batch)
             batch_loss.backward()
             optimizer.step()
-      
+
             probs = torch.sigmoid(output.detach())
             preds = np.round(probs.cpu())
             train_probs += list(probs.data.cpu().numpy())
@@ -320,7 +346,7 @@ def train_project(net, optimizer, train_ldr, val_ldr, test_ldr, X_valid, epochs,
             train_preds += list(preds.data.numpy())
             cur_loss += batch_loss.detach()
 
-        train_losses.append(cur_loss / len(train_ldr.dataset))        
+        train_losses.append(cur_loss / len(train_ldr.dataset))
 
         net.eval()
         # Validation
@@ -336,15 +362,14 @@ def train_project(net, optimizer, train_ldr, val_ldr, test_ldr, X_valid, epochs,
                 probs = torch.sigmoid(output.detach())
                 preds = np.round(probs.cpu())
                 val_probs += list(probs.data.cpu().numpy())
-                val_preds += list(preds.data.numpy()) 
+                val_preds += list(preds.data.numpy())
                 val_targs += list(np.array(y_batch_val.cpu()))
                 val_loss += val_batch_loss.detach()
 
             valid_losses.append(val_loss / len(val_ldr.dataset))
-            print("Epoch:", epoch+1)
 
-            train_acc_cur = accuracy_score(train_targs, train_preds)  
-            valid_acc_cur = accuracy_score(val_targs, val_preds) 
+            train_acc_cur = accuracy_score(train_targs, train_preds)
+            valid_acc_cur = accuracy_score(val_targs, val_preds)
             train_auc_cur = roc_auc_score(train_targs, train_probs)
             valid_auc_cur = roc_auc_score(val_targs, val_probs)
 
@@ -358,28 +383,37 @@ def train_project(net, optimizer, train_ldr, val_ldr, test_ldr, X_valid, epochs,
             no_epoch_improve = 0
             min_val_loss = (val_loss / len(X_valid))
         else:
-            no_epoch_improve +=1
-        if no_epoch_improve == 20:
+            no_epoch_improve += 1
+        if no_epoch_improve == early_stop:
             print("Early stopping\n")
             break
-            
+
+        if epoch % 5 == 0:
+            print("Epoch {}".format(epoch),
+                  " \t Train loss: {:.5f} \t Validation loss: {:.5f}".format(train_losses[-1], valid_losses[-1]))
+
     # Test
     if test_ldr != []:
+
         with torch.no_grad():
-            for batch_idx, (data, target, peptide) in enumerate(test_ldr):
+            for batch_idx, (data, target) in enumerate(test_ldr):
+                print(batch_idx)
                 x_batch_test = data.float().detach()
                 y_batch_test = target.float().detach().unsqueeze(1)
-                peptide_batch_test = peptide.int().detach()
-                
+
                 output = net(x_batch_test)
+                test_batch_loss = criterion(output, y_batch_test)
 
                 probs = torch.sigmoid(output.detach())
                 preds = np.round(probs.cpu())
-                test_probs += list(probs.data.cpu().numpy())
-                test_preds += list(preds.data.numpy())
-                test_targs += list(np.array(y_batch_test.cpu()))
-                test_peptides += list(np.array(peptide_batch_test.cpu()))
+                test_probs = list(probs.data.cpu().numpy())
+                test_preds = list(preds.data.numpy())
+                test_targs = list(np.array(y_batch_test.cpu()))
+                test_loss = test_batch_loss.detach()
+                test_auc_cur = roc_auc_score(test_targs, test_preds)
+                test_acc_cur = accuracy_score(test_targs, test_preds)
+                test_acc.append(test_acc_cur)
+                test_auc.append(test_auc_cur)
 
-    return train_acc, train_losses, train_auc, valid_acc, valid_losses, valid_auc, val_preds, val_targs
-        
-        
+    return train_acc, train_losses, train_auc, valid_acc, valid_losses, valid_auc, val_preds, val_targs, test_preds, list(
+        test_targs), test_loss, test_acc, test_auc
