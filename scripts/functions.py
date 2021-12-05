@@ -108,6 +108,10 @@ def run_PCA(data, variance_required = 0.9, max_components = 100):
     Run PCA and get the minimum number of components required to reach 
     the minimum variance required.
     """
+    # add condition for baseline model where its just has 54 components
+    #if data.shape[1] < max_components:
+    #    max_components = int(data.shape[1])
+    
     first_model = PCA(n_components = max_components)
     first_model.fit_transform(data)
 
@@ -119,13 +123,12 @@ def run_PCA(data, variance_required = 0.9, max_components = 100):
 
     return variances, optimal_components, reduced_model, fitted_data
 
-def back_to_tensor_size(matrix, final_size):
+def back_to_original_size(matrix, final_size):
     """
     Reshape matrix back to original 3D shape with the reduced dimensionality
-    for the embedded variable. *Option to return a matrix instead of tensor
-    by adding .numpy() in the end
+    for the embedded variable. 
     """
-    final_tensor = torch.tensor(matrix).reshape(final_size[0], final_size[1], final_size[2])
+    final_tensor = torch.tensor(matrix).reshape(final_size[0], final_size[1], final_size[2]).numpy()
     return final_tensor
 
 def construct_pssm(data):
