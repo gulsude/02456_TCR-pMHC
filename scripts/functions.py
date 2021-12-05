@@ -91,6 +91,42 @@ def invoke(early_stopping, loss, model, implement=False):
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
+def prepare_data_pca(embedded_list):
+    """
+    Get result from embedded to have the proper size in 2D 
+    ready to run the PCA analysis afterwards.
+    """
+    n_observations = len(embedded_list)
+    n_residues = len(embedded_list[0])
+    embedded_att = len(embedded_list[0][0])
+    embedded_matrix = torch.tensor(embedded_list).reshape(n_observations * n_residues, embedded_att).numpy()
+    return n_observations, embedded_matrix
+
+def run_PCA(data, variance_required = 0.9, max_components = 100):
+    """
+    Run PCA and get the minimum number of components required to reach 
+    the minimum variance required.
+    """
+    first_model = PCA(n_components = max_components)
+    first_model.fit_transform(data)
+
+    variances = first_model.explained_variance_ratio_.cumsum()
+    optimal_components = np.argmax(variances > variance_required)
+
+    reduced_model = PCA(n_components = optimal_components)
+    fitted_data = reduced_model.fit_transform(data)
+
+    return variances, optimal_components, reduced_model, fitted_data
+
+def back_to_tensor_size(matrix, final_size):
+    """
+    Reshape matrix back to original 3D shape with the reduced dimensionality
+    for the embedded variable. *Option to return a matrix instead of tensor
+    by adding .numpy() in the end
+    """
+    final_tensor = torch.tensor(matrix).reshape(final_size[0], final_size[1], final_size[2])
+    return final_tensor
+
 def construct_pssm(data):
     beta = 50.0
     peptides = data
