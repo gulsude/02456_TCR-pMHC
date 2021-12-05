@@ -141,7 +141,7 @@ class Net_project2(nn.Module):
         #main difference added a conv layer
         self.conv3 = nn.Conv1d(in_channels=numFilter, out_channels=numFilter, kernel_size=3, stride=2, padding=1)
         torch.nn.init.kaiming_uniform_(self.conv2.weight)
-        self.conv2_bn = nn.BatchNorm1d(numFilter)
+        self.conv3_bn = nn.BatchNorm1d(numFilter)
 
         #main difference num_layer 3 > 6
         self.rnn = nn.LSTM(input_size=numFilter,hidden_size=numHN,num_layers=6, dropout=dropOutRate, batch_first=True, bidirectional = True)
@@ -186,7 +186,7 @@ class Net_project3(nn.Module):
         #main difference added a conv layer
         self.conv3 = nn.Conv1d(in_channels=numFilter, out_channels=numFilter, kernel_size=3, stride=2, padding=1)
         torch.nn.init.kaiming_uniform_(self.conv2.weight)
-        self.conv2_bn = nn.BatchNorm1d(numFilter)
+        self.conv3_bn = nn.BatchNorm1d(numFilter)
 
         #main difference num_layer 3 > 6
         self.rnn = nn.LSTM(input_size=numFilter,hidden_size=numHN,num_layers=6, dropout=dropOutRate, batch_first=True, bidirectional = True)
@@ -236,7 +236,7 @@ class Net_project4(nn.Module):
         #main difference added a conv layer
         self.conv3 = nn.Conv1d(in_channels=numFilter, out_channels=numFilter, kernel_size=3, stride=2, padding=1)
         torch.nn.init.kaiming_uniform_(self.conv2.weight)
-        self.conv2_bn = nn.BatchNorm1d(numFilter)
+        self.conv3_bn = nn.BatchNorm1d(numFilter)
 
         #main difference num_layer 3 > 6
         self.rnn = nn.LSTM(input_size=numFilter,hidden_size=numHN,num_layers=6, dropout=dropOutRate, batch_first=True, bidirectional = True)
