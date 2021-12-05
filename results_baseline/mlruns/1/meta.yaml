@@ -1,0 +1,4 @@
+artifact_location: file:///Users/gulsudedemircan/Documents/github/02456_TCR-pMHC/scripts/mlruns/1
+experiment_id: '1'
+lifecycle_stage: active
+name: hyperparameter grid
