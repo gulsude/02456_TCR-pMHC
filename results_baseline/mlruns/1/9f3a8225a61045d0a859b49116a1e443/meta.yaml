@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/gulsudedemircan/Documents/github/02456_TCR-pMHC/scripts/mlruns/1/9f3a8225a61045d0a859b49116a1e443/artifacts
+end_time: 1638550062616
+entry_point_name: ''
+experiment_id: '1'
+lifecycle_stage: active
+name: ''
+run_id: 9f3a8225a61045d0a859b49116a1e443
+run_uuid: 9f3a8225a61045d0a859b49116a1e443
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1638550062603
+status: 3
+tags: []
+user_id: gulsudedemircan
