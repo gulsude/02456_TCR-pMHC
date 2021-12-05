@@ -127,7 +127,7 @@ class Net_project(nn.Module):
 
 class Net_project2(nn.Module):
     def __init__(self,  num_classes, n_features, numHN, numFilter, dropOutRate):
-        super(Net_project, self).__init__()
+        super(Net_project2, self).__init__()
         self.bn0 = nn.BatchNorm1d(n_features)
         self.conv1 = nn.Conv1d(in_channels=n_features, out_channels=numFilter, kernel_size=3, stride=2, padding=1)
         torch.nn.init.kaiming_uniform_(self.conv1.weight)
@@ -171,7 +171,7 @@ class Net_project2(nn.Module):
 
 class Net_project3(nn.Module):
     def __init__(self,  num_classes, n_features, numHN, numFilter, dropOutRate):
-        super(Net_project, self).__init__()
+        super(Net_project3, self).__init__()
         self.bn0 = nn.BatchNorm1d(n_features)
         #change in kernel and stride
         self.conv1 = nn.Conv1d(in_channels=n_features, out_channels=numFilter, kernel_size=4, stride=3, padding=1)
@@ -221,7 +221,7 @@ class Net_project3(nn.Module):
 
 class Net_project4(nn.Module):
     def __init__(self,  num_classes, n_features, numHN, numFilter, dropOutRate):
-        super(Net_project, self).__init__()
+        super(Net_project4, self).__init__()
         self.bn0 = nn.BatchNorm1d(n_features)
 
         self.conv1 = nn.Conv1d(in_channels=n_features, out_channels=numFilter, kernel_size=3, stride=2, padding=1)
