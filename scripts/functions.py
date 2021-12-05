@@ -5,6 +5,7 @@ import torch
 import math
 from sklearn.metrics import accuracy_score, accuracy_score, roc_auc_score, roc_curve, auc
 import random
+from sklearn.decomposition import PCA
 
 seed_val = 42
 random.seed(seed_val)
