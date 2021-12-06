@@ -31,7 +31,7 @@ name_experiment = "PCA"
 for filter_num in numFilter:
     for nn in numHN:
         for do in dropOutRate:
-            notebook_name = '{}_{}_model_test_{}_numHN_{}_filters_{}_dr_{}_lr_{}_wc_{}.ipynb'.format(date,current_time, modelName, nn,numFilter, str(do).replace(".",""),str(learning_rate).replace(".",""),str(weight_decay).replace(".",""))
+            notebook_name = '{}_{}_model_test_{}_numHN_{}_filters_{}_dr_{}_lr_{}_wc_{}.ipynb'.format(date,current_time, modelName, nn, filter_num, str(do).replace(".",""),str(learning_rate).replace(".",""),str(weight_decay).replace(".",""))
             print("Running:", notebook_name)
 
             pm.execute_notebook(input_path='main_PCA.ipynb',
