@@ -140,7 +140,7 @@ class Net_project2(nn.Module):
 
         #main difference added a conv layer
         self.conv3 = nn.Conv1d(in_channels=numFilter, out_channels=numFilter, kernel_size=3, stride=2, padding=1)
-        torch.nn.init.kaiming_uniform_(self.conv2.weight)
+        torch.nn.init.kaiming_uniform_(self.conv3.weight)
         self.conv3_bn = nn.BatchNorm1d(numFilter)
 
         #main difference num_layer 3 > 6
@@ -160,7 +160,7 @@ class Net_project2(nn.Module):
         x = self.pool(F.relu(self.conv2(x)))
         x = self.conv2_bn(x)
         x = self.drop(x)
-        x = self.conv3_bn(x)
+        x = self.pool(F.relu(self.conv2(3)))
         x = self.drop(x)
         x = x.transpose_(2, 1)
         x, (h, c) = self.rnn(x)
@@ -185,7 +185,7 @@ class Net_project3(nn.Module):
 
         #main difference added a conv layer
         self.conv3 = nn.Conv1d(in_channels=numFilter, out_channels=numFilter, kernel_size=3, stride=2, padding=1)
-        torch.nn.init.kaiming_uniform_(self.conv2.weight)
+        torch.nn.init.kaiming_uniform_(self.conv3.weight)
         self.conv3_bn = nn.BatchNorm1d(numFilter)
 
         #main difference num_layer 3 > 6
@@ -207,7 +207,7 @@ class Net_project3(nn.Module):
         x = self.pool(F.relu(self.conv2(x)))
         x = self.conv2_bn(x)
         x = self.drop(x)
-        x = self.conv3_bn(x)
+        x = self.pool(F.relu(self.conv3(x)))
         x = self.drop(x)
         x = x.transpose_(2, 1)
         x, (h, c) = self.rnn(x)
@@ -257,7 +257,7 @@ class Net_project4(nn.Module):
         x = self.pool(F.relu(self.conv2(x)))
         x = self.conv2_bn(x)
         x = self.drop(x)
-        x = self.conv3_bn(x)
+        x = self.pool(F.relu(self.conv2(x)))
         x = self.drop(x)
         x = x.transpose_(2, 1)
         x, (h, c) = self.rnn(x)
