@@ -445,15 +445,17 @@ def train_project(net, optimizer, train_ldr, val_ldr, test_ldr, X_valid, epochs,
                 test_batch_loss = criterion(output, y_batch_test)
 
                 probs = torch.sigmoid(output.detach())
+                predsROC = probs
                 preds = np.round(probs.cpu())
                 test_probs = list(probs.data.cpu().numpy())
                 test_preds = list(preds.data.numpy())
+                test_predsROC = list(probs.data.cpu().numpy())
                 test_targs = list(np.array(y_batch_test.cpu()))
                 test_loss = test_batch_loss.detach()
-                test_auc_cur = roc_auc_score(test_targs, test_preds)
+                test_auc_cur = roc_auc_score(test_targs, test_predsROC)
                 test_acc_cur = accuracy_score(test_targs, test_preds)
                 test_acc.append(test_acc_cur)
                 test_auc.append(test_auc_cur)
 
     return train_acc, train_losses, train_auc, valid_acc, valid_losses, valid_auc, val_preds, val_targs, test_preds, list(
-        test_targs), test_loss, test_acc, test_auc
+        test_targs), test_loss, test_acc, test_auc, test_predsROC
