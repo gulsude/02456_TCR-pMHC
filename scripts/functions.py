@@ -450,6 +450,7 @@ def train_project(net, optimizer, train_ldr, val_ldr, test_ldr, X_valid, epochs,
                 test_probs = list(probs.data.cpu().numpy())
                 test_preds = list(preds.data.numpy())
                 test_predsROC = list(probs.data.cpu().numpy())
+                print("-----",test_predsROC)
                 test_targs = list(np.array(y_batch_test.cpu()))
                 test_loss = test_batch_loss.detach()
                 test_auc_cur = roc_auc_score(test_targs, test_predsROC)
